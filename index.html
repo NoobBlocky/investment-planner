@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Investment Planner Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap">
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#16202e;--mute:#5d6b7c;--line:#d9e0e7;--acc:#0b6e69;--hi:#c77d00;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--ink:#e8edf2;--mute:#97a5b4;--line:#2b3846;--acc:#4fc3bb;--hi:#f0b23f;--bad:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--ink:#e8edf2;--mute:#97a5b4;--line:#2b3846;--acc:#4fc3bb;--hi:#f0b23f;--bad:#ff8a80;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 48px}
+h1{font:500 28px/1.2 "IBM Plex Serif",Georgia,serif;margin:0 0 6px}
+h2{font:600 16px/1.3 "IBM Plex Sans",sans-serif;margin:0 0 12px}
+p.sub{color:var(--mute);margin:0 0 20px;max-width:64ch}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font:500 30px/1.1 "IBM Plex Serif",Georgia,serif;color:var(--acc)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border:0}.kv span:first-child{color:var(--mute)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);border-radius:6px;padding:12px;cursor:pointer;background:var(--bg);text-align:left;color:var(--ink);font:inherit}
+.tier[aria-pressed="true"]{border:2px solid var(--hi);padding:11px}
+.tier b{display:block;font-size:18px}.tier small{color:var(--mute)}
+.alloc{display:flex;height:14px;border-radius:4px;overflow:hidden;margin:6px 0 10px}
+.alloc i{display:block}
+.warn{color:var(--bad)}
+.note{font-size:12.5px;color:var(--mute)}
+#fields{display:flex;flex-direction:column}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:620px;margin-top:8px}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+svg{width:100%;height:auto;display:block}
+.out{overflow-x:auto}
+button.go{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:9px 14px;font:600 14px "IBM Plex Sans",sans-serif;cursor:pointer;margin-top:12px}
+</style></head><body><main>
+<h1>Investment planner</h1>
+<p class="sub">Enter your situation to see what you can invest, what it may grow to, and how long it takes. Figures are starter estimates for testing, not advice.</p>
+<div class="grid">
+<section class="card" aria-label="Your details">
+<h2>Your details</h2>
+<div id="fields">
+<div id="f-who" style="order:0"><label for="who">Who is investing?</label><select id="who"><option value="a" selected>Adult</option><option value="s">Student or child</option></select></div>
+<div class="f" id="f-country"><label for="country">Country of residence</label><select id="country"></select></div>
+<div class="f" id="f-region"><label for="city" id="clab">Region</label><select id="city"></select></div>
+<div class="f" id="f-salary"><label for="salary">Monthly gross salary (<span id="cur">USD</span>)</label><input id="salary" type="number" min="0" value="5000"></div>
+<div class="f" id="f-adults"><div class="row"><div><label for="adults">Adults</label><input id="adults" type="number" min="1" value="1"></div>
+<div><label for="kids">Children</label><input id="kids" type="number" min="0" value="0"></div></div></div>
+<div class="f" id="f-deps"><label for="deps">Dependent parents or relatives</label><input id="deps" type="number" min="0" value="0"></div>
+<div class="f" id="f-debt"><label for="debt">Monthly debt payments (loans, EMIs)</label><input id="debt" type="number" min="0" value="0"></div>
+<div class="f" id="f-saved"><label for="saved">Current savings and investments</label><input id="saved" type="number" min="0" value="0"></div>
+<div class="f" id="f-life"><label for="life">Lifestyle</label><select id="life"><option value=".85">Lean</option><option value="1" selected>Standard</option><option value="1.2">Comfortable</option></select></div>
+<div class="f" id="f-amt"><label for="amt">How much you want to invest each month (<span id="cur3">USD</span>)</label><input id="amt" type="number" min="0" value="100"></div>
+<div class="f" id="f-risk"><label for="risk">Risk comfort</label><select id="risk"><option value="c">Low: mostly bonds</option><option value="b" selected>Medium: balanced</option><option value="g">High: mostly stocks</option></select></div>
+<div class="f" id="f-goal"><label for="goal">Target amount in today’s money (optional)</label><input id="goal" type="number" min="0" placeholder="Default: 25× yearly spending"><p class="note" style="margin:4px 0 0">The sum you want to end up with, priced at today’s costs. Prices rise over time, so the planner raises this number for inflation before checking whether you have reached it. Leave it blank to use a standard long-term target.</p></div>
+<div class="f" id="f-horizon"><label for="horizon">How long you plan to invest</label><select id="horizon"><option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">1 year</option><option value="24">2 years</option><option value="36">3 years</option><option value="60">5 years</option><option value="120">10 years</option><option value="180">15 years</option><option value="240" selected>20 years</option><option value="300">25 years</option><option value="360">30 years</option><option value="480">40 years</option><option value="-1">Custom</option></select>
+<div class="row" id="hcustom" style="display:none;margin-top:6px"><input id="hnum" type="number" min="1" value="15" aria-label="Custom length"><select id="hunit" aria-label="Unit"><option value="1">months</option><option value="12" selected>years</option></select></div></div>
+</div>
+</section>
+<div>
+<section class="card" id="budget"></section>
+<section class="card"><h2>Choose how much to invest each month</h2><div class="tiers" id="tiers"></div><label for="custom">Or enter your own monthly amount (<span id="cur2">USD</span>)</label><input id="custom" type="number" min="0" placeholder="e.g. 500"><p class="note" id="customnote"></p></section>
+<section class="card" id="result"></section>
+<section class="card out"><h2>Projected growth</h2><div id="chart"></div><p class="note" id="chartnote"></p></section>
+<section class="card" id="route"></section>
+<section class="card out" id="mkt"><h2>Market data</h2><p class="note">This app refreshes market data by itself every few hours. If the server is offline, you can still upload a market_data.json file made by market_data_updater.py.</p><input id="mfile" type="file" accept=".json,application/json"><div id="mout"></div></section>
+<section class="card"><h2>Test the planner’s accuracy</h2>
+<p class="note">Example: the planner says you will have 12,500 after 1 year. A year later your account really holds 12,900. The error is +3.2%, which is inside ±5%.</p>
+<ol class="note" style="padding-left:18px;margin:6px 0"><li>Set “How long you plan to invest” to a short period, such as 6 months or 1 year, then invest that way for real.</li><li>Press “Save prediction”. It records today’s date and what the planner expects at the end.</li><li>When the date arrives, come back, type your real balance, and press Check.</li></ol>
+<button class="go" id="savep" type="button">Save prediction</button>
+<div id="plist"></div>
+</section>
+</div></div>
+<p class="note">Cost, tax, inflation and return figures in this prototype are rough built-in averages. A live version would replace the DATA table below with feeds from market and economic data providers. Past returns do not guarantee future returns, and this tool is not licensed financial advice.</p>
+</main>
+<script>
+// DATA: replace with live feeds. m = monthly cost of one adult in local currency; inf = inflation; eq/bd = long-run nominal returns; tax = average effective tax
+const DATA={
+India:{c:"INR",m:30000,inf:.05,eq:.11,bd:.07,tax:.10,loc:"Nifty 50 index fund",acct:"PPF, NPS or ELSS for tax benefits",bond:"Government bonds or debt funds"},
+"United States":{c:"USD",m:2800,inf:.03,eq:.08,bd:.045,tax:.18,loc:"S&P 500 or total-market index fund",acct:"401(k) match first, then Roth IRA",bond:"Treasury or aggregate bond fund"},
+"United Kingdom":{c:"GBP",m:2000,inf:.03,eq:.07,bd:.04,tax:.22,loc:"FTSE All-Share index fund",acct:"Stocks and Shares ISA",bond:"Gilts or bond index fund"},
+Japan:{c:"JPY",m:220000,inf:.02,eq:.06,bd:.015,tax:.15,loc:"TOPIX or Nikkei 225 index fund",acct:"NISA (tax-free account)",bond:"Japanese government bonds"},
+Germany:{c:"EUR",m:2300,inf:.025,eq:.065,bd:.025,tax:.30,loc:"DAX or MSCI Europe ETF",acct:"Savings allowance (Sparerpauschbetrag)",bond:"Bund or euro bond ETF"},
+Singapore:{c:"SGD",m:3000,inf:.025,eq:.07,bd:.03,tax:.08,loc:"STI ETF",acct:"CPF top-ups and SRS",bond:"Singapore Savings Bonds"},
+UAE:{c:"AED",m:6000,inf:.025,eq:.07,bd:.045,tax:0,loc:"Regional index ETF",acct:"No income tax; use a broker with global access",bond:"Sukuk or bond ETF"},
+Australia:{c:"AUD",m:3200,inf:.03,eq:.075,bd:.04,tax:.23,loc:"ASX 200 index ETF",acct:"Extra superannuation contributions",bond:"Government bond ETF"},
+Canada:{c:"CAD",m:2800,inf:.028,eq:.075,bd:.035,tax:.20,loc:"S&P/TSX index ETF",acct:"TFSA, then RRSP",bond:"Government bond ETF"},
+Brazil:{c:"BRL",m:4000,inf:.045,eq:.10,bd:.105,tax:.15,loc:"Ibovespa ETF (BOVA11)",acct:"Tesouro Direto for the bond part",bond:"Tesouro Selic or IPCA+"}};
+const RISK={c:{w:.2,vol:.06,n:"Low risk"},b:{w:.6,vol:.11,n:"Medium risk"},g:{w:.85,vol:.15,n:"High risk"}};
+const $=id=>document.getElementById(id);
+const ORD={a:{country:1,region:2,salary:3,adults:4,deps:5,debt:6,saved:7,life:8,risk:9,goal:10,horizon:11},s:{country:1,region:2,amt:3,horizon:4,risk:5,goal:6}};
+function applyMode(stu){const m=ORD[stu?"s":"a"];["country","region","salary","adults","deps","debt","saved","life","amt","risk","goal","horizon"].forEach(k=>{const e=$("f-"+k);e.style.display=m[k]?"":"none";e.style.order=m[k]||0});
+$("budget").style.display=$("tiers").parentElement.style.display=stu?"none":""}
+const REG={India:"State|Delhi:1.25|Maharashtra:1.25|Karnataka:1.15|Telangana:1.1|Tamil Nadu:1|Gujarat:1|West Bengal:.9|Uttar Pradesh:.85|Other state:.9","United States":"State|California:1.35|New York:1.35|Massachusetts:1.2|Washington:1.2|Illinois:1|Florida:1.05|Texas:1|Ohio:.85|Other state:1","United Kingdom":"Region|London:1.4|South East:1.15|Scotland:.95|Wales:.9|Northern England:.9|Other region:1",Japan:"Prefecture|Tokyo:1.3|Kanagawa:1.15|Osaka:1.1|Aichi:1|Fukuoka:.95|Hokkaido:.9|Other prefecture:.9",Germany:"State|Bavaria:1.15|Hamburg:1.15|Berlin:1.1|North Rhine-Westphalia:1|Saxony:.85|Other state:1",Singapore:"Area|Singapore:1",UAE:"Emirate|Dubai:1.2|Abu Dhabi:1.1|Sharjah:.8|Other emirate:.7",Australia:"State|New South Wales:1.2|Victoria:1.1|Western Australia:1.05|Queensland:1|South Australia:.95|Other state:.9",Canada:"Province|Ontario:1.15|British Columbia:1.2|Alberta:1|Quebec:.95|Other province:.9",Brazil:"State|São Paulo:1.2|Rio de Janeiro:1.1|Minas Gerais:.9|Other state:.85"};
+let RC="";
+function fillReg(){RC=sel.value;const a=REG[RC].split("|");$("clab").textContent="Which "+a[0].toLowerCase()+" do you live in?";$("city").innerHTML=a.slice(1).map(x=>{const p=x.split(":");return `<option value="${p[1]}">${p[0]}</option>`}).join("")}
+function hz(){const v=+$("horizon").value;$("hcustom").style.display=v<0?"grid":"none";if(v>0)return v;return Math.min(600,Math.max(1,Math.round((+$("hnum").value||1)*(+$("hunit").value))))}
+function dur(m){if(m<12)return m+(m==1?" month":" months");const y=Math.floor(m/12),r=m%12;return y+(y==1?" year":" years")+(r?" "+r+(r==1?" month":" months"):"")}
+const sel=$("country");Object.keys(DATA).forEach(k=>sel.add(new Option(k,k)));sel.value="United States";
+let tier=1,M={};
+function fmt(n,c){try{return new Intl.NumberFormat(undefined,{style:"currency",currency:c,maximumFractionDigits:0}).format(n)}catch(e){return Math.round(n).toLocaleString()}}
+function sim(pay,r,inf,n,start){let v=start,p=pay,mr=Math.pow(1+r,1/12)-1,out=[v];for(let m=1;m<=n;m++){v=v*(1+mr)+p;if(m%12==0)p*=1+inf;out.push(v)}return out}
+function calc(){
+if(RC!==sel.value)fillReg();
+const stu=$("who").value=="s";applyMode(stu);
+const d=DATA[sel.value],f=k=>(stu&&["salary","adults","kids","deps","debt","saved","custom"].includes(k))?0:+$(k).value||0,r=RISK[$("risk").value];
+$("cur").textContent=$("cur3").textContent=d.c;
+const sal=f("salary"),net=sal*(1-d.tax),ad=Math.max(1,f("adults"));
+const size=1+(ad-1)*.6+f("kids")*.35+f("deps")*.4;
+const exp=d.m*size*(+$("city").value)*(stu?1:+$("life").value),debt=f("debt");
+const surplus=net-exp-debt,rec=Math.max(0,surplus*.8);
+const ix=MK&&MK.byCountry&&MK.byCountry[sel.value],eqr=ix&&ix.cagr10!=null?.5*d.eq+.5*Math.min(.15,Math.max(0,ix.cagr10)):d.eq;
+const rate=r.w*eqr+(1-r.w)*d.bd,N=hz(),yrs=N/12;
+const goal=f("goal")||exp*12*25;
+M={d,sal,net,exp,debt,surplus,rec,rate,r,yrs,goal};
+$("budget").innerHTML=`<h2>What it costs you to live</h2>
+<div class="kv"><span>Take-home pay (after about ${Math.round(d.tax*100)}% tax)</span><b>${fmt(net,d.c)}</b></div>
+<div class="kv"><span>Estimated living costs</span><b>${fmt(exp,d.c)}</b></div>
+<div class="kv"><span>Debt payments</span><b>${fmt(debt,d.c)}</b></div>
+<div class="kv"><span>Left over each month</span><b class="${surplus<0?"warn":""}">${fmt(surplus,d.c)}</b></div>
+<div class="kv"><span>Emergency fund to build first (6 months)</span><b>${fmt(exp*6,d.c)}</b></div>
+${surplus<=0?`<p class="warn">Your costs exceed your take-home pay. Reduce spending or debt before investing.</p>`:`<p class="note">We suggest investing at most 80% of the leftover and keeping the rest as a buffer.</p>`}`;
+const t=[["Starter",.25],["Steady",.5],["Full",1]];
+$("tiers").innerHTML=t.map((x,i)=>`<button type="button" class="tier" data-i="${i}" aria-pressed="${i==tier&&!(+$('custom').value>0)}"><small>${x[0]}</small><b>${fmt(rec*x[1],d.c)}</b><small>per month</small></button>`).join("");
+document.querySelectorAll(".tier").forEach(b=>b.onclick=()=>{tier=+b.dataset.i;$("custom").value="";calc()});
+const cu=f("custom");$("cur2").textContent=d.c;
+const pay=stu?(+$("amt").value||0):cu>0?cu:rec*t[tier][1],s0=f("saved"),inf=(MK&&MK.inflation&&MK.inflation[sel.value]!=null)?MK.inflation[sel.value]:d.inf;
+$("customnote").innerHTML=cu>0&&cu>surplus?`<span class="warn">This is ${fmt(cu-Math.max(surplus,0),d.c)} more than your monthly leftover.</span>`:cu>0?`Using your amount: ${fmt(cu,d.c)} a month (${Math.round(cu/surplus*100)}% of your leftover).`:"";
+const vol=ix&&ix.vol!=null?r.w*ix.vol+(1-r.w)*.05:r.vol,band=vol/Math.sqrt(yrs);
+const base=sim(pay,rate,inf,N,s0),lo=sim(pay,Math.max(-.95,rate-band),inf,N,s0),hi=sim(pay,rate+band,inf,N,s0);
+let paid=s0,pp=pay;for(let m=1;m<=N;m++){paid+=pp;if(m%12==0)pp*=1+inf}
+const end=base[N],real=end/Math.pow(1+inf,yrs);M.end=end;M.N=N;
+// years to reach goal (goal grows with inflation)
+let fy=null;const long=sim(pay,rate,inf,600,s0);for(let m=1;m<=600;m++){if(long[m]>=goal*Math.pow(1+inf,m/12)){fy=m;break}}
+$("result").innerHTML=`<h2>What you could end up with</h2>
+<div class="big">${fmt(end,d.c)}</div><p class="note" style="margin-top:4px">after ${dur(N)} at about ${(rate*100).toFixed(1)}% a year (${r.n}). Likely range: ${fmt(lo[N],d.c)} to ${fmt(hi[N],d.c)}.${N<12?' Over less than a year the range is wide because markets swing a lot in the short run.':''}</p>
+<div class="kv"><span>You put in</span><b>${fmt(paid,d.c)}</b></div>
+<div class="kv"><span>Growth earned</span><b>${fmt(end-paid,d.c)}</b></div>
+<div class="kv"><span>Worth in today’s money</span><b>${fmt(real,d.c)}</b></div>
+<div class="kv"><span>Target (today’s money)</span><b>${fmt(goal,d.c)}</b></div>
+<div class="kv"><span>Time to reach target</span><b>${pay<=0&&s0<=0?"Not reachable":fy?dur(fy):"More than 50 years"}</b></div>`;
+draw(base,lo,hi,d.c,N);
+const w=r.w,al=[["Global stock index fund",w*.6,"#0b6e69"],[d.loc,w*.4,"#c77d00"],[d.bond,(1-w)*.8,"#5b6fb0"],["Cash (emergency fund)",(1-w)*.2,"#8795a5"]];
+$("route").innerHTML=`<h2>Where to put the money</h2><div class="alloc">${al.map(a=>`<i style="width:${a[1]*100}%;background:${a[2]}"></i>`).join("")}</div>`+
+al.map(a=>`<div class="kv"><span><i style="display:inline-block;width:10px;height:10px;background:${a[2]};border-radius:2px;margin-right:6px"></i>${a[0]}</span><b>${(a[1]*100).toFixed(0)}% · ${fmt(pay*a[1],d.c)}/mo</b></div>`).join("")+
+`<p class="note">Tax-friendly account to use: ${d.acct}. Low-cost index funds are the default route because few individual stock pickers beat the market over long periods. A live version could add stock-level ideas.</p>`}
+function draw(b,l,h,c,y){M.base=b;const W=640,H=260,P=48,mx=Math.max(...h)||1;
+const X=i=>P+i*(W-P-10)/y,Y=v=>H-24-(v/mx)*(H-44);
+const path=a=>a.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)).join("");
+const area=h.map((v,i)=>(i?"L":"M")+X(i)+" "+Y(v)).join("")+l.slice().reverse().map((v,i)=>"L"+X(y-i)+" "+Y(v)).join("")+"Z";
+let g="";for(let k=0;k<=4;k++){const v=mx*k/4;g+=`<line x1="${P}" x2="${W-10}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${P-6}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--mute)">${new Intl.NumberFormat(undefined,{notation:"compact"}).format(v)}</text>`}
+const step=y>24?Math.ceil(y/72)*12:Math.ceil(y/6);for(let i=0;i<=y;i+=step)g+=`<text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--mute)">${i<=24?i+"m":(i/12)+"y"}</text>`;
+$("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected portfolio value over ${dur(y)}">${g}<path d="${area}" fill="var(--acc)" opacity=".15"/><path d="${path(b)}" fill="none" stroke="var(--acc)" stroke-width="2.5"/></svg>`;
+$("chartnote").textContent="Line: expected path. Shaded area: likely range, based on typical ups and downs for this mix."}
+document.querySelectorAll("input,select").forEach(e=>{if(!["pj","ac","py","mfile"].includes(e.id))e.oninput=calc});
+const _u2=()=>{const p=+$("pj").value,a=+$("ac").value;if(!p||!a){$("chkout").textContent="Enter both values.";return}
+const e=(a-p)/p*100;$("chkout").innerHTML=Math.abs(e)<=5?`Error ${e.toFixed(2)}%. Within ±5%.`:`<span class="warn">Error ${e.toFixed(2)}%. Outside ±5%. Note which inputs or assumptions drove the gap.</span>`};
+const _u1=()=>{const y=Math.round(+$("py").value);if(M.base&&y>=1&&y<=M.base.length-1)$("pj").value=Math.round(M.base[y]);else $("chkout").textContent="Pick a year within your investing horizon."};
+const pc=v=>v==null?"–":(v*100).toFixed(1)+"%";
+function showMk(){const o=$("mout");if(!MK){o.innerHTML='<p class="note">No data loaded. Projections use built-in averages.</p>';return}
+const age=Math.floor((Date.now()-Date.parse(MK.updated))/864e5);
+o.innerHTML=`<p class="note">${AUTO?"Live data from the server. ":""}Updated ${MK.updated.slice(0,10)} (${age} days ago).${age>7?' <span class="warn">Data is stale. Run the updater again.</span>':''} Where your country has an index below, projections blend the long-run average with its 10-year return, and use its recent volatility and the latest inflation.</p><table><tr><th>Index</th><th>Exchange</th><th>1 year</th><th>10 yr/yr</th><th>Volatility</th><th>From peak</th><th>Trend</th><th>Style</th></tr>`+MK.indices.map(x=>`<tr><td>${x.name}</td><td>${x.exchange}</td><td>${pc(x.ret1y)}</td><td>${pc(x.cagr10)}</td><td>${pc(x.vol)}</td><td>${pc(x.drawdown)}</td><td>${x.trend}</td><td>${x.style}</td></tr>`).join("")+"</table>"}
+$("mfile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);if(!j.indices||!j.updated)throw 0;MK=j;try{localStorage.setItem("mk",rd.result)}catch(x){}showMk();calc()}catch(x){$("mout").innerHTML='<p class="warn">That file is not valid market data. Use the file made by market_data_updater.py.</p>'}};rd.readAsText(f)};
+let MK=null,AUTO=false;try{const s=localStorage.getItem("mk");if(s)MK=JSON.parse(s)}catch(e){}
+let PR=[];try{PR=JSON.parse(localStorage.getItem("preds")||"[]")}catch(e){}
+const savePR=()=>{try{localStorage.setItem("preds",JSON.stringify(PR))}catch(e){}};
+const mb='padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer';
+function showPR(){$("plist").innerHTML=PR.length?PR.map((p,i)=>`<div class="kv" style="flex-wrap:wrap"><span>Saved ${p.on}, check on ${p.due}<br>Predicted after ${dur(p.n)}: <b>${fmt(p.val,p.c)}</b></span><span><input id="a${i}" type="number" placeholder="Your real balance" value="${p.act||""}" style="width:150px"> <button type="button" class="go" style="margin:0" data-a="chk" data-i="${i}">Check</button> <button type="button" style="${mb}" data-a="del" data-i="${i}">Delete</button></span><span style="width:100%">${p.res||""}</span></div>`).join(""):'<p class="note">No saved predictions yet.</p>'}
+$("savep").onclick=()=>{if(!M.end)return;const now=new Date(),due=new Date(now);due.setMonth(due.getMonth()+M.N);PR.push({on:now.toISOString().slice(0,10),due:due.toISOString().slice(0,10),val:Math.round(M.end),c:M.d.c,n:M.N});savePR();showPR()};
+$("plist").onclick=e=>{const b=e.target.closest("button[data-a]");if(!b)return;const i=+b.dataset.i,p=PR[i];if(b.dataset.a=="del"){PR.splice(i,1);savePR();showPR();return}
+const a=+$("a"+i).value;if(!a)return;const er=(a-p.val)/p.val*100;p.act=a;p.res=Math.abs(er)<=5?`Error ${er.toFixed(2)}%. Within ±5%.`:`<span class="warn">Error ${er.toFixed(2)}%. Outside ±5%. Note which inputs or assumptions drove the gap.</span>`;savePR();showPR()};
+showMk();showPR();
+async function autoLoad(){try{const r=await fetch("/api/market",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(!j.indices||!j.indices.length)throw 0;MK=j;AUTO=true;showMk();calc()}catch(e){}}
+autoLoad();setInterval(autoLoad,30*60*1000);
+calc();
+</script></body></html>
